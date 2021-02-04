@@ -1,0 +1,53 @@
+---
+title: "Prediction Assignment Writeup"
+author: "GM"
+date: "1/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Read and clean the data. Columns are either almost all NA or never NA. I drop the columns that are primarily NA and ones that do not seem relevant to the classes. I do not split the train set into two since I will use cross validation.
+
+```{r data}
+set.seed(888)
+train <- read.csv('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv')
+test <- read.csv('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv')
+train <- train[,colSums(is.na(train))==0]
+rm_vars <- grepl("^X|time|window", names(train))
+train <- train[,!rm_vars]
+```
+
+```{r more_cleaning}
+nzv <- nearZeroVar(train)
+train <- train[,-nzv]
+```
+
+I created a random forest to predict the classes. Random forest is an ideal algorithm for cross validation and class predictions. 
+
+
+
+```{r model}
+controlRF <- trainControl(method='cv', 3)
+modelRF <- train(classe~., data = train,
+                 , trControl = controlRF, method = 'rf')
+```
+I expect about 99% accuracy. The model is likely to be wrong about 1% of the time.
+```{r model_evaluation}
+modelrf
+```
+
+```{r results_for_quiz}
+predict(modelRF, newdata = test)
+
+
+```
+
